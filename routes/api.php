@@ -14,13 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
+/*Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-});
+});*/
 
 //As rotas em api são prefixadas com /api por padrão
-Route::get('students', 'ApiController@getAllStudents');
-Route::get('students/{id}', 'ApiController@getStudent');
-Route::post('students', 'ApiController@createStudent');
-Route::put('students/{id}', 'ApiController@updateStudent');
-Route::delete('students/{id}','ApiController@deleteStudent');
+Route::get('posts', 'PostController@index');
+Route::get('post/{id}', 'PostController@show');
+Route::post('post', 'PostController@store');
+Route::put('post/{id}', 'PostController@update');
+Route::delete('post/{id}','PostController@destroy');
