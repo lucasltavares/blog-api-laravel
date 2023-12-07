@@ -12,5 +12,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // $this->call(UserSeeder::class);
+        # By default the next user will have password
+        # that will be equal to "password" word
+
     }
 }
