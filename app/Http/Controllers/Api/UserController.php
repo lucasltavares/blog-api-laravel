@@ -10,9 +10,22 @@ class UserController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
-        $users = User::get();
-        return response()->json($users, 200);
+        //$users = User::get();
+        //return response()->json($users, 200);
+        $role = auth()->user()->is_admin;
+
+
+        if ($role == 1 ) { //Admin
+            $user = User::get();
+
+            return response()->json($user, 200);
+        } else {
+            $id = auth()->user()->id;
+            $user = User::where('id', $id)->get();
+
+            return response()->json($user, 200);
+        }
+
     }
     public function store(Request $request)
     {
