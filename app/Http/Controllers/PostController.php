@@ -25,8 +25,8 @@ class PostController extends Controller
 
     public function store(Request $request) {
         $post = new Post;
-        $post->name = $request->name;
-        $post->course = $request->course;
+        $post->title = $request->title;
+        $post->text = $request->text;
         $post->save(); // add Try catch
 
         return response()->json([

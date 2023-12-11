@@ -18,21 +18,29 @@ use Illuminate\Support\Facades\Route;
     return $request->user();
 });*/
 
+// Auth routes.
 Route::post('auth/login', 'Api\\AuthController@login');
-
-Route::group(['middleware' => ['apiJwt']], function(){ //apiJwt é um alias registrado em Kernel.php
-    Route::get('users', 'Api\\UserController@index');
-    Route::post('logout', 'Api\\AuthController@logout');
-    Route::post('refresh', 'Api\\AuthController@refresh');
-    Route::post('me', 'Api\\AuthController@me');
+Route::group(['auth' => ['apiJwt'], 'as' => 'api.auth.'], function(){
+    Route::post('auth/logout', 'Api\\AuthController@logout');
+    Route::post('auth/refresh', 'Api\\AuthController@refresh');
+    Route::post('auth/me', 'Api\\AuthController@me');
 });
 
+// Users routes.
+Route::group(['users' => ['apiJwt'], 'as' => 'api.users.'], function(){ //apiJwt é um alias registrado em Kernel.php
+    Route::get('users', 'Api\\UserController@index');
+    Route::get('user/{id}', 'Api\\UserController@show');
+    Route::post('user', 'Api\\UserController@store');
+    Route::put('user/{id}', 'Api\\UserController@update');
+    Route::delete('user/{id}', 'Api\\UserController@destroy');
+});
 
-Route::post('user', 'Api\\UserController@store');
+// Posts routes.
+Route::group(['middleware' => ['apiJwt'], 'as' => 'api.posts.'], function (){
+    Route::get('posts', 'PostController@index');
+    Route::get('post/{id}', 'PostController@show');
+    Route::post('post', 'PostController@store');
+    Route::put('post/{id}', 'PostController@update');
+    Route::delete('post/{id}','PostController@destroy');
+});
 
-//As rotas em api são prefixadas com /api por padrão
-Route::get('posts', 'PostController@index');
-Route::get('post/{id}', 'PostController@show');
-Route::post('post', 'PostController@store');
-Route::put('post/{id}', 'PostController@update');
-Route::delete('post/{id}','PostController@destroy');

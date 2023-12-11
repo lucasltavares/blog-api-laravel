@@ -45,11 +45,13 @@ class UserController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        //
+        $id = auth()->user()->id;
+        $user = User::where('id', $id)->get();
+
+        return response()->json($user, 200);
     }
 
     /**
@@ -57,21 +59,49 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        //
+
+        $user = User::find($id);
+
+        if ($user->exists()) {
+
+            $user->name = is_null($request->name) ? $user->name : $request->name;
+            $user->email = is_null($request->email) ? $user->email : $request->email;
+            $user->is_admin = is_null($request->is_admin) ? $user->is_admin : $request->is_admin;
+
+            $user->save();
+
+            return response()->json([
+                "message:" => "User record successfully updated."
+            ], 200);
+        } else {
+            return response()->json([
+                "message:" => "Record not found."
+            ], 204);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
-        //
+        $user = User::find($id);
+
+        if ($user->exists()) {
+            $user->delete();
+            return response()->json([
+                "message:" => "User record successfully deleted."
+            ], 202);
+        } else {
+            return response()->json([
+                "message" => "User record not found."
+            ], 404);
+        }
     }
 }
