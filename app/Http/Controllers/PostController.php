@@ -3,39 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Services\PostService;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+
+    private $postService;
+
+    public function __construct(PostService $postService) {
+        $this->postService = $postService;
+    }
     public function index() {
-        if ($this->isAdmin()) {
-            $result = Post::get();
 
-            return response()->json($result, 200);
-        } else {
-            $user_id = auth()->user()->id;
-            $result = Post::where('user_id', $user_id)->get();
+        $result = $this->isAdmin() ?
+            $this->postService->getAllPosts() :
+            $this->postService->getUserPosts(auth()->user()->id);
 
-            return response()->json($result, 200);
-        }
-
+        return response()->json($result, 200);
     }
 
     public function show($id) {
 
-        $user_id = auth()->user()->id;
+        $post = $this->isAdmin() ?
+            $this->postService->getPostById($id) :
+            $this->postService->getUserPostById($id);
 
-        if ($this->isAdmin()) {
-            $post = Post::where('id', $id)->get();
-            return response()->json($post, 200);
-        }
-
-        if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
-            $post = Post::where('id', $id)->get();
+        if ($post) {
             return response()->json($post, 200);
         } else {
             return response()->json([
-                "message" => "Post not found."
+                "message" => "Post record not found."
             ], 404);
         }
     }
@@ -123,7 +121,7 @@ class PostController extends Controller
         }
     }
 
-    public function isAdmin() {
+    private function isAdmin() {
         $role = auth()->user()->is_admin;
         if ($role) { return true; }
     }
