@@ -20,14 +20,14 @@ use Illuminate\Support\Facades\Route;
 
 // Auth routes.
 Route::post('auth/login', 'Api\\AuthController@login');
-Route::group(['auth' => ['apiJwt'], 'as' => 'api.auth.'], function(){
+Route::group(['middleware' => ['apiJwt'], 'as' => 'api.auth.'], function(){
     Route::post('auth/logout', 'Api\\AuthController@logout');
     Route::post('auth/refresh', 'Api\\AuthController@refresh');
     Route::post('auth/me', 'Api\\AuthController@me');
 });
 
 // Users routes.
-Route::group(['users' => ['apiJwt'], 'as' => 'api.users.'], function(){ //apiJwt é um alias registrado em Kernel.php
+Route::group(['middleware' => ['apiJwt'], 'as' => 'api.users.'], function(){ //apiJwt é um alias registrado em Kernel.php
     Route::get('users', 'Api\\UserController@index');
     Route::get('user/{id}', 'Api\\UserController@show');
     Route::post('user', 'Api\\UserController@store');

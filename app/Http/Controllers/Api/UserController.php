@@ -29,16 +29,24 @@ class UserController extends Controller
     }
     public function store(Request $request)
     {
-        $user = new User;
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password);
+        $role = auth()->user()->is_admin;
+        if ($role == 1) {
+            $user = new User;
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = bcrypt($request->password);
 
-        $user->save();
+            $user->save();
 
-        return response()->json([
-            "message" => "user record created successfully."
-        ], 201);
+            return response()->json([
+                "message" => "user record created successfully."
+            ], 201);
+        } else {
+            return response()->json([
+                "message" => "Invalid permissions."
+            ], 401);
+        }
+
     }
 
     /**

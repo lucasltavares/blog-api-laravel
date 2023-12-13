@@ -8,12 +8,29 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     public function index() {
-        $posts = Post::get();
-        return response()->json($posts, 200);
+        if ($this->isAdmin()) {
+            $result = Post::get();
+
+            return response()->json($result, 200);
+        } else {
+            $user_id = auth()->user()->id;
+            $result = Post::where('user_id', $user_id)->get();
+
+            return response()->json($result, 200);
+        }
+
     }
 
     public function show($id) {
-        if (Post::where('id', $id)->exists()) {
+
+        $user_id = auth()->user()->id;
+
+        if ($this->isAdmin()) {
+            $post = Post::where('id', $id)->get();
+            return response()->json($post, 200);
+        }
+
+        if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
             $post = Post::where('id', $id)->get();
             return response()->json($post, 200);
         } else {
@@ -27,6 +44,7 @@ class PostController extends Controller
         $post = new Post;
         $post->title = $request->title;
         $post->text = $request->text;
+        $post->user_id = auth()->user()->id;
         $post->save(); // add Try catch
 
         return response()->json([
@@ -36,34 +54,77 @@ class PostController extends Controller
 
     //corrigir all nullable false positive
     public function update(Request $request, $id) {
-        if(Post::where('id', $id)->exists()) {
-            $post = Post::find($id);
-            $post->name = is_null($request->name) ? $post->name : $request->name; // Verifica nulidade para atualizar parâmetros únicos.
-            $post->course = is_null($request->course) ? $post->course : $request->course;
-            $post->save();
+        $user_id = auth()->user()->id;
 
-            return response()->json([
-                "message" => "records updated successfully."
-            ], 200);
+        if ($this->isAdmin()) {
+            if(Post::where('id', $id)->exists()) {
+                $post = Post::find($id);
+                $post->title = is_null($request->title) ? $post->title : $request->title; // Verifica nulidade para atualizar parâmetros únicos.
+                $post->text = is_null($request->text) ? $post->text : $request->text;
+                $post->save();
+
+                return response()->json([
+                    "message" => "records updated successfully."
+                ], 200);
+            } else {
+                return response()->json([
+                    "message" => "Post not found."
+                ], 404);
+            }
         } else {
-            return response()->json([
-                "message" => "Post not found."
-            ], 404);
+          if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
+              $post = Post::find($id);
+              $post->title = is_null($request->title) ? $post->title : $request->title; // Verifica nulidade para atualizar parâmetros únicos.
+              $post->text = is_null($request->text) ? $post->text : $request->text;
+              $post->save();
+
+              return response()->json([
+                  "message" => "records updated successfully."
+              ], 200);
+          } else {
+              return response()->json([
+                  "message" => "Post not found."
+              ], 404);
+          }
         }
+
+
     }
 
     public function destroy($id) {
-        if(Post::where('id', $id)->exists()) {
-            $post = Post::find($id);
-            $post->delete();
+        $user_id = auth()->user()->id;
 
-            return response()->json([
-                "message" => "records deleted successfully."
-            ], 202);
+        if ($this->isAdmin()) {
+            if(Post::where('id', $id)->exists()) {
+                $post = Post::find($id);
+                $post->delete();
+
+                return response()->json([
+                    "message" => "records deleted successfully."
+                ], 202);
+            } else {
+                return response()->json([
+                    "message" => "Post not found."
+                ], 404);
+            }
         } else {
-            return response()->json([
-                "message" => "Post not found."
-            ], 404);
+            if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
+                $post = Post::find($id);
+                $post->delete();
+
+                return response()->json([
+                    "message" => "records deleted successfully."
+                ], 202);
+            } else {
+                return response()->json([
+                    "message" => "Post not found."
+                ], 404);
+            }
         }
+    }
+
+    public function isAdmin() {
+        $role = auth()->user()->is_admin;
+        if ($role) { return true; }
     }
 }
