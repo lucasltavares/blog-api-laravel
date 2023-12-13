@@ -10,12 +10,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        //$users = User::get();
-        //return response()->json($users, 200);
-        $role = auth()->user()->is_admin;
-
-
-        if ($role == 1 ) { //Admin
+        if ($this->isAdmin() ) { //Admin
             $user = User::get();
 
             return response()->json($user, 200);
@@ -29,8 +24,8 @@ class UserController extends Controller
     }
     public function store(Request $request)
     {
-        $role = auth()->user()->is_admin;
-        if ($role == 1) {
+
+        if ($this->isAdmin() ) {
             $user = new User;
             $user->name = $request->name;
             $user->email = $request->email;
@@ -56,10 +51,17 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $id = auth()->user()->id;
-        $user = User::where('id', $id)->get();
+        if ($this->isAdmin()) {
+            $id = auth()->user()->id;
+            $user = User::where('id', $id)->get();
 
-        return response()->json($user, 200);
+            return response()->json($user, 200);
+        } else {
+            return response()->json([
+                "message" => "Invalid permissions."
+            ], 401);
+        }
+
     }
 
     /**
@@ -70,25 +72,32 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if ($this->isAdmin()) {
+            $user = User::find($id);
 
-        $user = User::find($id);
+            if ($user->exists()) {
 
-        if ($user->exists()) {
+                $user->name = is_null($request->name) ? $user->name : $request->name;
+                $user->email = is_null($request->email) ? $user->email : $request->email;
+                $user->is_admin = is_null($request->is_admin) ? $user->is_admin : $request->is_admin;
 
-            $user->name = is_null($request->name) ? $user->name : $request->name;
-            $user->email = is_null($request->email) ? $user->email : $request->email;
-            $user->is_admin = is_null($request->is_admin) ? $user->is_admin : $request->is_admin;
+                $user->save();
 
-            $user->save();
-
-            return response()->json([
-                "message:" => "User record successfully updated."
-            ], 200);
+                return response()->json([
+                    "message:" => "User record successfully updated."
+                ], 200);
+            } else {
+                return response()->json([
+                    "message:" => "Record not found."
+                ], 204);
+            }
         } else {
             return response()->json([
-                "message:" => "Record not found."
-            ], 204);
+                "message" => "Invalid permissions."
+            ], 401);
         }
+
+
     }
 
     /**
@@ -99,17 +108,29 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        $user = User::find($id);
+        if ($this->isAdmin()) {
+            $user = User::find($id);
 
-        if ($user->exists()) {
-            $user->delete();
-            return response()->json([
-                "message:" => "User record successfully deleted."
-            ], 202);
+            if ($user->exists()) {
+                $user->delete();
+                return response()->json([
+                    "message:" => "User record successfully deleted."
+                ], 202);
+            } else {
+                return response()->json([
+                    "message" => "User record not found."
+                ], 404);
+            }
         } else {
             return response()->json([
-                "message" => "User record not found."
-            ], 404);
+                "message" => "Invalid permissions."
+            ], 401);
         }
+
+    }
+
+    private function isAdmin() {
+        $role = auth()->user()->is_admin;
+        if ($role) { return true; } else { return false; }
     }
 }
