@@ -37,87 +37,46 @@ class PostController extends Controller
             ], 404);
         }
     }
-
-    public function store(Request $request) {
-        $post = new Post;
-        $post->title = $request->title;
-        $post->text = $request->text;
-        $post->user_id = auth()->user()->id;
-        $post->save(); // add Try catch
+    public function store(Request $request)
+    {
+        $this->postService->storePost($request);
 
         return response()->json([
-            "message" => "post record created successfully."
+            "message" => "Post record created successfully.",
         ], 201);
     }
 
     //corrigir all nullable false positive
     public function update(Request $request, $id) {
-        $user_id = auth()->user()->id;
 
-        if ($this->isAdmin()) {
-            if(Post::where('id', $id)->exists()) {
-                $post = Post::find($id);
-                $post->title = is_null($request->title) ? $post->title : $request->title; // Verifica nulidade para atualizar parâmetros únicos.
-                $post->text = is_null($request->text) ? $post->text : $request->text;
-                $post->save();
+        $result = $this->isAdmin() ?
+            $this->postService->updatePost($request, $id) :
+            $this->postService->updateUserPost($request, $id);
 
-                return response()->json([
-                    "message" => "records updated successfully."
-                ], 200);
-            } else {
-                return response()->json([
-                    "message" => "Post not found."
-                ], 404);
-            }
+        if ($result) {
+            return response()->json([
+                "message" => "Post record updated sucessfully."
+            ], 200);
         } else {
-          if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
-              $post = Post::find($id);
-              $post->title = is_null($request->title) ? $post->title : $request->title; // Verifica nulidade para atualizar parâmetros únicos.
-              $post->text = is_null($request->text) ? $post->text : $request->text;
-              $post->save();
-
-              return response()->json([
-                  "message" => "records updated successfully."
-              ], 200);
-          } else {
-              return response()->json([
-                  "message" => "Post not found."
-              ], 404);
-          }
+            return response()->json([
+                "message" => "Post record not found."
+            ], 404);
         }
-
-
     }
 
     public function destroy($id) {
-        $user_id = auth()->user()->id;
+        $result = $this->isAdmin() ?
+            $this->postService->deletePost($id) :
+            $this->postService->deleteUserPost($id);
 
-        if ($this->isAdmin()) {
-            if(Post::where('id', $id)->exists()) {
-                $post = Post::find($id);
-                $post->delete();
-
-                return response()->json([
-                    "message" => "records deleted successfully."
-                ], 202);
-            } else {
-                return response()->json([
-                    "message" => "Post not found."
-                ], 404);
-            }
+        if ($result) {
+            return response()->json([
+                "message" => "Post record deleted successfully."
+            ], 200);
         } else {
-            if (Post::where('id', $id)->where('user_id', '=', $user_id)->exists()) {
-                $post = Post::find($id);
-                $post->delete();
-
-                return response()->json([
-                    "message" => "records deleted successfully."
-                ], 202);
-            } else {
-                return response()->json([
-                    "message" => "Post not found."
-                ], 404);
-            }
+            return response()->json([
+                "message" => "Post record not found."
+            ], 404);
         }
     }
 
