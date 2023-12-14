@@ -20,11 +20,17 @@ This is a simple CRUD API for a blog built with Laravel. The API includes basic 
 - **User Authentication:** Secure endpoints using JWT (JSON Web Tokens).
 - **Clean and Modular Code:** Well-organized codebase following Laravel best practices.
 
+## Requirements
+
+- PHP 7.3+
+- Laravel 7+
+- Composer
+
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/seu-usuario/nome-do-projeto.git
+   git clone https://github.com/lucasltavares/blog-api-laravel.git
 2. Install dependencies using Composer:
    ```bash
    composer install
@@ -36,17 +42,16 @@ This is a simple CRUD API for a blog built with Laravel. The API includes basic 
    ```bash
    php artisan serve
    
-## API endpoints
-- POST /api/register: Register a new user.
+## API core endpoints
 - POST /api/login: User login and JWT generation.
 - GET /api/posts: Retrieve all blog posts.
-- GET /api/posts/{id}: Retrieve a specific blog post.
-- POST /api/posts: Create a new blog post.
-- PUT /api/posts/{id}: Update an existing blog post.
-- DELETE /api/posts/{id}: Delete a blog post.
+- GET /api/post/{id}: Retrieve a specific blog post.
+- POST /api/post: Create a new blog post.
+- PUT /api/post/{id}: Update an existing blog post.
+- DELETE /api/post/{id}: Delete a blog post.
 
 ## Authentication
-To access protected routes, include the JWT token in the Authorization header:
+To access protected routes, include the JWT token acquired on login in the Authorization header:
  ```bash
  Authorization: Bearer your_token_here
 ```
@@ -54,5 +59,7 @@ To access protected routes, include the JWT token in the Authorization header:
 ## Roadmap
 ### Next Steps
 - Implement categories for blog posts.
-- Add user roles for different levels of access.
-...
+- Implement rest HATEOAS
+- Implement validation
+- Implement API results pagination
+
